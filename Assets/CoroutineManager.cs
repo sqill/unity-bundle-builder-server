@@ -6,6 +6,37 @@ using UnityEngine.Networking;
 using UnityEditor;
 using System.IO;
 
+[System.Serializable]
+public class ImageInfo
+{
+    public string url;
+    public int fps;
+    public int frameCount;
+}
+
+[System.Serializable]
+public class EffectInfo
+{
+    public string url;
+    public int fps;
+    public int frameCount;
+}
+
+
+// [System.Serializable]
+// public class LinksJson
+// {
+//     public string[] urls;
+//     public EffectInfo[] effectsUrl;
+// }
+
+[System.Serializable]
+public class LinksJson
+{
+    public ImageInfo[] links;
+}
+
+
 [ExecuteInEditMode]
 public class CoroutineManager : MonoBehaviour
 {
@@ -15,22 +46,128 @@ public class CoroutineManager : MonoBehaviour
 
     public Texture2D testTexture;
 
+    public TextAsset jsonFile;
+
+    private LinksJson links;
+
+    private int imageIndex;
+
+    private bool canBuild, canDelete, canQuit;
+
+    private string dirPath, atlasdirPath;
+
+    private string outputPath;
+
     public void Awake()
     {
         Instance = this;
     }
     public void Start(){
-        StartCoroutine(DownloadImage());
+        canBuild = false;
+        canDelete = false;
+        canQuit = false;
+        dirPath = Application.dataPath + "/Raw/Prefab/";
+        atlasdirPath = Application.dataPath + "/Raw/Atlas/";
+        // StartCoroutine(DownloadImage());
+
     }
 
-    public void ImAlive(){
-        Debug.Log("nice");
+    public void ParseLinkJson(string jsonString)
+    {
+        canBuild = false;
+        imageIndex = 0;
+        string finalString = "{\"links\":" + jsonString + "}";
+        links = JsonUtility.FromJson<LinksJson>(finalString);
+        StartCoroutine(DownloadImages(links));
+    }
+    public void ParseOutput(string path)
+    {
+        canDelete = false;
+        StartCoroutine(BuildBundles(path));
     }
 
-    private IEnumerator DownloadImage(){
-        
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://sqill.s3.eu-west-3.amazonaws.com/video_editor_assets/asset/215/9dddf40052b9d42d541f1845cea95ee8.png?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAWIMIQWVUDWT2O73D%2F20221025%2Feu-west-3%2Fs3%2Faws4_request\u0026X-Amz-Date=20221025T112957Z\u0026X-Amz-Expires=86400\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=a1e3c85b86eabe776895d5e02c55d86d4f2894f6545ab75958dcd040e17cb1ea");
-        
+    public void WaitForResult()
+    {
+        canQuit = false;
+        StartCoroutine(FinishBuilding());
+    }
+    public void WaitForQuit()
+    {
+        StartCoroutine(FinishRunning());
+    }
+
+    private IEnumerator BuildBundles(string path)
+    {
+        yield return new WaitUntil(() => canBuild);
+
+        Debug.Log("build Bundles");
+        outputPath = path;
+        BuildPipeline.BuildAssetBundles(path + "/android", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.Android);
+        BuildPipeline.BuildAssetBundles(path + "/ios", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
+        AssetDatabase.Refresh();
+
+        canDelete = true;
+    }
+
+    //TestOnly Function
+    private void ClearBundles(){
+        if (Directory.Exists(outputPath + "/android")) 
+        { 
+            Directory.Delete(outputPath + "/android", true); 
+        }
+        if (Directory.Exists(outputPath + "/ios")) 
+        { 
+            Directory.Delete(outputPath + "/ios", true); 
+        }
+        Directory.CreateDirectory(outputPath + "/android");
+        Directory.CreateDirectory(outputPath + "/ios");
+    }
+
+    private void ClearImages(){
+        if (Directory.Exists(dirPath)) 
+        { 
+            Directory.Delete(dirPath, true); 
+        }
+        if (Directory.Exists(atlasdirPath)) 
+        { 
+            Directory.Delete(atlasdirPath, true); 
+        }
+        Directory.CreateDirectory(dirPath);
+        Directory.CreateDirectory(atlasdirPath);
+    }
+
+    private IEnumerator FinishBuilding()
+    {
+        Debug.Log("here");
+        yield return new WaitUntil(() => canDelete);
+        ClearImages();
+        canQuit = true;
+        Debug.Log("Finish Bundles");
+
+    }
+
+    private IEnumerator FinishRunning()
+    {
+        yield return new WaitUntil(() => canQuit);
+        EditorApplication.Exit(0);
+    }
+
+    private IEnumerator DownloadImages(LinksJson links)
+    {
+        foreach(ImageInfo info in links.links)
+        {
+            yield return DownloadImage(info.url);
+            //For Effects
+            if(info.fps != 0)
+                Debug.Log(info.fps);
+        }
+        AssetDatabase.Refresh();
+        canBuild = true;  
+    }
+
+    private IEnumerator DownloadImage(string url)
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
         yield return request.SendWebRequest();
         if(request.result == UnityWebRequest.Result.ConnectionError) 
         {
@@ -38,44 +175,17 @@ public class CoroutineManager : MonoBehaviour
         }
         else
         {
-            Texture2D myTexture = ((DownloadHandlerTexture)request.downloadHandler).texture;
-            Debug.Log("Downloaded " + request.downloadHandler.data.Length); 
-            testTexture = myTexture;
-
-            // byte[] bytes = myTexture.EncodeToPNG();
-            var dirPath = Application.dataPath + "/Raw/Atlas/";
             if(!Directory.Exists(dirPath)) {
                 Directory.CreateDirectory(dirPath);
             }
-            var atlasdirPath = Application.dataPath + "/Raw/Prefab/";
             if(!Directory.Exists(atlasdirPath)) {
                 Directory.CreateDirectory(atlasdirPath);
             }
-            File.WriteAllBytes(dirPath + "Image" + ".png", request.downloadHandler.data);
-            File.WriteAllBytes(atlasdirPath + "TinyImage" + ".png", request.downloadHandler.data);
-            
-            BuildPipeline.BuildAssetBundles("Assets/Bundles/AndroidBundles", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.Android);
-            BuildPipeline.BuildAssetBundles("Assets/Bundles/IOSBundles", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
-
-            AssetDatabase.Refresh();
-            // EditorApplication.Quit();
-
-
-            // AssetDatabase.CreateAsset(bytes, "Assets/Textures/" + "RandomName.png");
-
-            // AssetDatabase.CreateAsset(myTexture, "Assets/Textures/" + "RandomName.asset");
-            // AssetDatabase.SaveAssets();
-
-            // TextureImporter import = (TextureImporter) TextureImporter.GetAtPath(AssetDatabase.GetAssetPath(myTexture));
-
-            // TextureImporterFormat formatIOS = import.GetAutomaticFormat("IOS");
-            // TextureImporterFormat formatAndroid = import.GetAutomaticFormat("Android");
-            // import.SetPlatformTextureSettings("IOS", 6000, formatIOS);
-
-            // import.SetTextureSettings(formatIOS);
-        } 
+            File.WriteAllBytes(dirPath + "PrefabImage" + imageIndex + ".png", request.downloadHandler.data);
+            File.WriteAllBytes(atlasdirPath + "AtlasImage" + imageIndex + ".png", request.downloadHandler.data);
+            imageIndex++;
+        }
     }
-
 }
 
 #endif

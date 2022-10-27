@@ -10,17 +10,12 @@ class PostprocessTexture : AssetPostprocessor
 {
     void OnPreprocessTexture()
     {
-        if (assetPath.Contains("_bumpmap"))
-        {
-            TextureImporter textureImporter  = (TextureImporter)assetImporter;
-            textureImporter.convertToNormalmap = true;
-        }
-        if (assetPath.Contains("SaveTinyImages"))
+        if (assetPath.Contains("Atlas"))
         {
             TextureImporter import = (TextureImporter) assetImporter;
             ImportTexture(import, 256, "TestBundle1");
         }
-        if(assetPath.Contains("SaveImages"))
+        if(assetPath.Contains("Prefab"))
         {
             TextureImporter import = (TextureImporter) assetImporter;
             ImportTexture(import, 8192, "TestBundle2");
@@ -35,7 +30,6 @@ class PostprocessTexture : AssetPostprocessor
         import.SetPlatformTextureSettings("Android", size, formatAndroid);
         import.SetPlatformTextureSettings("IOS", size, formatIOS);
         import.SetPlatformTextureSettings("Standalone", size, formatAlone);
-        import.assetBundleName = bundle;
     }
 }
 
