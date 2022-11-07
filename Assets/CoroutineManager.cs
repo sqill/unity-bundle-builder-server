@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEditor;
 using System.IO;
+using UnityEngine.U2D;
+using UnityEditor.U2D;
 
 [System.Serializable]
 public class ImageInfo
@@ -45,6 +47,8 @@ public class CoroutineManager : MonoBehaviour
     public string accessEmail, accessToken;
 
     public Texture2D testTexture;
+
+    public SpriteAtlas spriteAtlas;
 
     public TextAsset jsonFile;
 
@@ -102,7 +106,22 @@ public class CoroutineManager : MonoBehaviour
 
         Debug.Log("build Bundles");
         outputPath = path;
+
+        if (!Directory.Exists(outputPath + "/android")) 
+        { 
+            Directory.CreateDirectory(outputPath + "/android"); 
+        }
+        if (!Directory.Exists(outputPath + "/ios")) 
+        { 
+            Directory.CreateDirectory(outputPath + "/ios"); 
+        }
+        
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.Android);
+
         BuildPipeline.BuildAssetBundles(path + "/android", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.Android);
+
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.iOS);
+
         BuildPipeline.BuildAssetBundles(path + "/ios", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
         AssetDatabase.Refresh();
 
@@ -130,10 +149,11 @@ public class CoroutineManager : MonoBehaviour
         }
         if (Directory.Exists(atlasdirPath)) 
         { 
-            Directory.Delete(atlasdirPath, true); 
+            foreach(string file in Directory.GetFiles(atlasdirPath))
+                if(!file.Contains("atlas"))
+                    File.Delete(file);
         }
         Directory.CreateDirectory(dirPath);
-        Directory.CreateDirectory(atlasdirPath);
     }
 
     private IEnumerator FinishBuilding()
@@ -162,6 +182,7 @@ public class CoroutineManager : MonoBehaviour
                 Debug.Log(info.fps);
         }
         AssetDatabase.Refresh();
+        
         canBuild = true;  
     }
 

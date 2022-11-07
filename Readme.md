@@ -1,4 +1,4 @@
-Unity Server Readme
+Unity Asset Bundle Processor
 
 Use command to test
 
@@ -8,5 +8,11 @@ Use command to test
 
 -output refers to output path of bundles
 
+output format 
+
+"outputPath"/ios/prefabbundle
+"outputPath"/ios/atlasbundle
+"outputPath"/android/prefabbundle
+"outputPath"/android/atlasbundle
 
 
