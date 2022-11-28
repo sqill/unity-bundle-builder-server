@@ -75,7 +75,7 @@ public class CoroutineManager : MonoBehaviour
         imageIndex = 0;
         string finalString = "{\"links\":" + jsonString + "}";
         links = JsonUtility.FromJson<LinksJson>(finalString);
-        StartCoroutine(DownloadImages(links));
+        DownloadImages(links);
     }
 
     private void BuildBundles(string path)
@@ -142,24 +142,23 @@ public class CoroutineManager : MonoBehaviour
         EditorApplication.Exit(0);
     }
 
-    private IEnumerator DownloadImages(LinksJson links)
+    private void DownloadImages(LinksJson json)
     {
         Debug.Log("Start Donwloading Images");
-        foreach(ImageInfo info in links.links)
+        foreach(ImageInfo info in json.links)
         {
             Debug.Log("Download Image " + info.url);
-            yield return StartCoroutine(DownloadImage(info.url));
+            StartCoroutine(DownloadImage(info.url, json.links.Length));
             Debug.Log("Finish Image " + info.url);
             //For Effects
             if(info.fps != 0)
                 Debug.Log(info.fps);
         }
-        AssetDatabase.Refresh();
-        Debug.Log("Finish Download Images");
-        BuildBundles(outputPath);
+        // AssetDatabase.Refresh();
+        // BuildBundles(outputPath);
     }
 
-    private IEnumerator DownloadImage(string url)
+    private IEnumerator DownloadImage(string url, int max)
     {
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
         yield return request.SendWebRequest();
@@ -179,6 +178,13 @@ public class CoroutineManager : MonoBehaviour
             File.WriteAllBytes(dirPath + "PrefabImage" + imageIndex + ".png", request.downloadHandler.data);
             File.WriteAllBytes(atlasdirPath + "AtlasImage" + imageIndex + ".png", request.downloadHandler.data);
             imageIndex++;
+            if(imageIndex == max)
+            {
+                Debug.Log("Finish Download Images");
+                AssetDatabase.Refresh();
+                BuildBundles(outputPath);
+            }
+   
         }
     }
 }
