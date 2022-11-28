@@ -179,12 +179,14 @@ public class CoroutineManager : MonoBehaviour
     {
         foreach(ImageInfo info in links.links)
         {
+            Debug.Log("Download Image " + info.url);
             yield return DownloadImage(info.url);
             //For Effects
             if(info.fps != 0)
                 Debug.Log(info.fps);
         }
         AssetDatabase.Refresh();
+        Debug.Log("Finish Download Images");
         
         canBuild = true;  
     }
