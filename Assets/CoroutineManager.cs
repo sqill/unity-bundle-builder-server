@@ -56,7 +56,7 @@ public class CoroutineManager : MonoBehaviour
 
     private int imageIndex;
 
-    private bool canBuild, canDelete, canQuit;
+    // private bool canBuild, canDelete, canQuit;
 
     private string dirPath, atlasdirPath;
 
@@ -66,40 +66,17 @@ public class CoroutineManager : MonoBehaviour
     {
         Instance = this;
     }
-    public void Start(){
-        canBuild = false;
-        canDelete = false;
-        canQuit = false;
+
+    public void Parse(string jsonString, string path)
+    {
         dirPath = Application.dataPath + "/Raw/Prefab/";
         atlasdirPath = Application.dataPath + "/Raw/Atlas/";
-        // StartCoroutine(DownloadImage());
-
-    }
-
-    public void ParseLinkJson(string jsonString)
-    {
-        canBuild = false;
+        outputPath = path;
         imageIndex = 0;
         string finalString = "{\"links\":" + jsonString + "}";
         links = JsonUtility.FromJson<LinksJson>(finalString);
         StartCoroutine(DownloadImages(links));
     }
-    public void ParseOutput(string path)
-    {
-        outputPath = path;
-        // StartCoroutine(BuildBundles(path));
-    }
-
-    // public void WaitForResult()
-    // {
-    //     canQuit = false;
-    //     StartCoroutine(FinishBuilding());
-    // }
-    // public void WaitForQuit()
-    // {
-    //     canQuit = false;
-    //     StartCoroutine(FinishRunning());
-    // }
 
     private void BuildBundles(string path)
     {
@@ -159,25 +136,15 @@ public class CoroutineManager : MonoBehaviour
         FinishRunning();
     }
 
-    // private IEnumerator FinishBuilding()
-    // {
-    //     Debug.Log("Wait finish building");
-    //     yield return new WaitUntil(() => canDelete);
-    //     Debug.Log("Finish Bundles");
-    //     ClearImages();
-    //     canQuit = true;
-    // }
 
     private void FinishRunning()
     {
-        // Debug.Log("Wait to quit editor");
-        // yield return new WaitUntil(() => canQuit);
-        // Debug.Log("Quit editor");
         EditorApplication.Exit(0);
     }
 
     private IEnumerator DownloadImages(LinksJson links)
     {
+        Debug.Log("Start Donwloading Images");
         foreach(ImageInfo info in links.links)
         {
             Debug.Log("Download Image " + info.url);

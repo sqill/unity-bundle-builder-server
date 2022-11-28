@@ -18,6 +18,8 @@ public class BuildAssets
         string[] args = System.Environment.GetCommandLineArgs();
 
         bool hasLink = false, hasOutput = false;
+
+        string links = "", path = "";
  
         for (int i = 0; i < args.Length; i++) 
         {
@@ -33,19 +35,17 @@ public class BuildAssets
                         if(args[x].Contains("-link")){
                             string contents = File.ReadAllText(args[x + 1]);
                             Debug.Log("JSON contents " + contents );
-                            CoroutineManager.Instance.ParseLinkJson(contents);
-                            hasLink = true;
+                            links = contents;
 
                         }
                         if(args[x].Contains("-output")){
-                            CoroutineManager.Instance.ParseOutput(args[x + 1]);
-                            hasOutput = true;
+                            path = args[x + 1];
+                            
                         }
+
                     }
-                    // if(hasLink && hasOutput){
-                    //     CoroutineManager.Instance.WaitForResult();
-                    //     CoroutineManager.Instance.WaitForQuit();
-                    // }
+                    if(links != "" && path != "")
+                        CoroutineManager.Instance.Parse(links, path);  
                     break;
             }
         }
