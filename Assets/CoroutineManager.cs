@@ -180,7 +180,8 @@ public class CoroutineManager : MonoBehaviour
         foreach(ImageInfo info in links.links)
         {
             Debug.Log("Download Image " + info.url);
-            yield return DownloadImage(info.url);
+            yield return StartCoroutine(DownloadImage(info.url));
+            Debug.Log("Finish Image " + info.url);
             //For Effects
             if(info.fps != 0)
                 Debug.Log(info.fps);
