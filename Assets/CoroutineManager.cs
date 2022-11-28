@@ -86,28 +86,26 @@ public class CoroutineManager : MonoBehaviour
     }
     public void ParseOutput(string path)
     {
-        canDelete = false;
-        StartCoroutine(BuildBundles(path));
+        outputPath = path;
+        // StartCoroutine(BuildBundles(path));
     }
 
-    public void WaitForResult()
-    {
-        canQuit = false;
-        StartCoroutine(FinishBuilding());
-    }
-    public void WaitForQuit()
-    {
-        canQuit = false;
-        StartCoroutine(FinishRunning());
-    }
+    // public void WaitForResult()
+    // {
+    //     canQuit = false;
+    //     StartCoroutine(FinishBuilding());
+    // }
+    // public void WaitForQuit()
+    // {
+    //     canQuit = false;
+    //     StartCoroutine(FinishRunning());
+    // }
 
-    private IEnumerator BuildBundles(string path)
+    private void BuildBundles(string path)
     {
-        yield return new WaitUntil(() => canBuild);
+        // yield return new WaitUntil(() => canBuild);
 
         Debug.Log("Build Bundles");
-        outputPath = path;
-
         if (!Directory.Exists(outputPath + "/android")) 
         { 
             Directory.CreateDirectory(outputPath + "/android"); 
@@ -126,11 +124,14 @@ public class CoroutineManager : MonoBehaviour
         BuildPipeline.BuildAssetBundles(path + "/ios", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
         AssetDatabase.Refresh();
 
-        canDelete = true;
+        // canDelete = true;
+        ClearImages();
+
     }
 
     //TestOnly Function
-    private void ClearBundles(){
+    private void ClearBundles()
+    {
         if (Directory.Exists(outputPath + "/android")) 
         { 
             Directory.Delete(outputPath + "/android", true); 
@@ -155,24 +156,24 @@ public class CoroutineManager : MonoBehaviour
                     File.Delete(file);
         }
         Directory.CreateDirectory(dirPath);
+        FinishRunning();
     }
 
-    private IEnumerator FinishBuilding()
-    {
-        Debug.Log("Wait finish building");
-        yield return new WaitUntil(() => canDelete);
-        Debug.Log("Finish Bundles");
-        ClearImages();
-        canQuit = true;
-    }
+    // private IEnumerator FinishBuilding()
+    // {
+    //     Debug.Log("Wait finish building");
+    //     yield return new WaitUntil(() => canDelete);
+    //     Debug.Log("Finish Bundles");
+    //     ClearImages();
+    //     canQuit = true;
+    // }
 
-    private IEnumerator FinishRunning()
+    private void FinishRunning()
     {
-        Debug.Log("Wait to quit editor");
-        yield return new WaitUntil(() => canQuit);
-        Debug.Log("Quit editor");
+        // Debug.Log("Wait to quit editor");
+        // yield return new WaitUntil(() => canQuit);
+        // Debug.Log("Quit editor");
         EditorApplication.Exit(0);
-
     }
 
     private IEnumerator DownloadImages(LinksJson links)
@@ -188,8 +189,7 @@ public class CoroutineManager : MonoBehaviour
         }
         AssetDatabase.Refresh();
         Debug.Log("Finish Download Images");
-        
-        canBuild = true;  
+        BuildBundles(outputPath);
     }
 
     private IEnumerator DownloadImage(string url)

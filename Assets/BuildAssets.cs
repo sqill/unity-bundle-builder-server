@@ -42,10 +42,10 @@ public class BuildAssets
                             hasOutput = true;
                         }
                     }
-                    if(hasLink && hasOutput){
-                        CoroutineManager.Instance.WaitForResult();
-                        CoroutineManager.Instance.WaitForQuit();
-                    }
+                    // if(hasLink && hasOutput){
+                    //     CoroutineManager.Instance.WaitForResult();
+                    //     CoroutineManager.Instance.WaitForQuit();
+                    // }
                     break;
             }
         }
