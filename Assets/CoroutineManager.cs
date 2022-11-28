@@ -97,6 +97,7 @@ public class CoroutineManager : MonoBehaviour
     }
     public void WaitForQuit()
     {
+        canQuit = false;
         StartCoroutine(FinishRunning());
     }
 
@@ -104,7 +105,7 @@ public class CoroutineManager : MonoBehaviour
     {
         yield return new WaitUntil(() => canBuild);
 
-        Debug.Log("build Bundles");
+        Debug.Log("Build Bundles");
         outputPath = path;
 
         if (!Directory.Exists(outputPath + "/android")) 
@@ -158,18 +159,20 @@ public class CoroutineManager : MonoBehaviour
 
     private IEnumerator FinishBuilding()
     {
-        Debug.Log("here");
+        Debug.Log("Wait finish building");
         yield return new WaitUntil(() => canDelete);
+        Debug.Log("Finish Bundles");
         ClearImages();
         canQuit = true;
-        Debug.Log("Finish Bundles");
-
     }
 
     private IEnumerator FinishRunning()
     {
+        Debug.Log("Wait to quit editor");
         yield return new WaitUntil(() => canQuit);
+        Debug.Log("Quit editor");
         EditorApplication.Exit(0);
+
     }
 
     private IEnumerator DownloadImages(LinksJson links)
@@ -196,6 +199,7 @@ public class CoroutineManager : MonoBehaviour
         }
         else
         {
+            Debug.Log("Downloaded Image at url " + url);
             if(!Directory.Exists(dirPath)) {
                 Directory.CreateDirectory(dirPath);
             }
