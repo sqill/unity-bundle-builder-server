@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEditor;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine.U2D;
 using UnityEditor.U2D;
 
@@ -57,6 +56,7 @@ public class CoroutineManager : MonoBehaviour
 
     private int imageIndex;
 
+    UnityWebRequestAsyncOperation asyncOperation;
     // private bool canBuild, canDelete, canQuit;
 
     private string dirPath, atlasdirPath;
@@ -149,8 +149,8 @@ public class CoroutineManager : MonoBehaviour
         foreach(ImageInfo info in json.links)
         {
             Debug.Log("Download Image " + info.url);
-            DownloadImage(info.url, json.links.Length);
-            Debug.Log("Finish Image " + info.url);
+            StartCoroutine(DownloadImage(info.url, json.links.Length));
+            // Debug.Log("Finish Image " + info.url);
             //For Effects
             if(info.fps != 0)
                 Debug.Log(info.fps);
@@ -161,12 +161,9 @@ public class CoroutineManager : MonoBehaviour
 
     private async void DownloadImage(string url, int max)
     {
+        Debug.Log("StartCoroutine");
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
-        var operation =  request.SendWebRequest();
-
-        while(!operation.isDone)
-            await Task.Yield();
-
+        yield return request.SendWebRequest();
         if(request.result == UnityWebRequest.Result.ConnectionError) 
         {
             Debug.Log("Failed Request" + request.error);
