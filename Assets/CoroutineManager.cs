@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEditor;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine.U2D;
 using UnityEditor.U2D;
 
@@ -148,7 +149,7 @@ public class CoroutineManager : MonoBehaviour
         foreach(ImageInfo info in json.links)
         {
             Debug.Log("Download Image " + info.url);
-            StartCoroutine(DownloadImage(info.url, json.links.Length));
+            DownloadImage(info.url, json.links.Length);
             Debug.Log("Finish Image " + info.url);
             //For Effects
             if(info.fps != 0)
@@ -158,10 +159,14 @@ public class CoroutineManager : MonoBehaviour
         // BuildBundles(outputPath);
     }
 
-    private IEnumerator DownloadImage(string url, int max)
+    private async void DownloadImage(string url, int max)
     {
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
-        yield return request.SendWebRequest();
+        var operation =  request.SendWebRequest();
+
+        while(!operation.isDone)
+            await Task.Yield();
+
         if(request.result == UnityWebRequest.Result.ConnectionError) 
         {
             Debug.Log("Failed Request" + request.error);
