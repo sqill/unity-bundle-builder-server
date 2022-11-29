@@ -159,7 +159,7 @@ public class CoroutineManager : MonoBehaviour
         // BuildBundles(outputPath);
     }
 
-    private async void DownloadImage(string url, int max)
+    private IEnumerator DownloadImage(string url, int max)
     {
         Debug.Log("StartCoroutine");
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
