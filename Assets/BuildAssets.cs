@@ -17,8 +17,6 @@ public class BuildAssets
     {
         string[] args = System.Environment.GetCommandLineArgs();
 
-        bool hasLink = false, hasOutput = false;
-
         string links = "", path = "";
  
         for (int i = 0; i < args.Length; i++) 

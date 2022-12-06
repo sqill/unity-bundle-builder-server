@@ -11,9 +11,13 @@ using UnityEditor.U2D;
 [System.Serializable]
 public class ImageInfo
 {
+    public string name;
     public string url;
     public int fps;
-    public int frameCount;
+    public int columns;
+    public int rows;
+    public int count;
+    public bool loop;
 }
 
 [System.Serializable]
@@ -63,6 +67,8 @@ public class CoroutineManager : MonoBehaviour
 
     private string outputPath;
 
+    private string testString;
+
     public void Awake()
     {
         Instance = this;
@@ -76,7 +82,7 @@ public class CoroutineManager : MonoBehaviour
         imageIndex = 0;
         string finalString = "{\"links\":" + jsonString + "}";
         links = JsonUtility.FromJson<LinksJson>(finalString);
-        DownloadImages(links);
+        StartCoroutine(DownloadImages(links));
     }
 
     private void BuildBundles(string path)
@@ -104,6 +110,7 @@ public class CoroutineManager : MonoBehaviour
 
         // canDelete = true;
         ClearImages();
+        FinishRunning();
 
     }
 
@@ -134,34 +141,46 @@ public class CoroutineManager : MonoBehaviour
                     File.Delete(file);
         }
         Directory.CreateDirectory(dirPath);
-        FinishRunning();
     }
-
 
     private void FinishRunning()
     {
         EditorApplication.Exit(0);
     }
 
-    private void DownloadImages(LinksJson json)
+    private IEnumerator DownloadImages(LinksJson json)
     {
         Debug.Log("Start Donwloading Images");
+        int index = 0;
         foreach(ImageInfo info in json.links)
         {
             Debug.Log("Download Image " + info.url);
-            StartCoroutine(DownloadImage(info.url, json.links.Length));
-            // Debug.Log("Finish Image " + info.url);
+            yield return DownloadImage(info.name, info.url, info.fps, info.rows, info.columns, info.count, info.loop);
+
+            // if(info.count > 0)
+            //     yield return GenerateEffectObject(info.name,info.fps, info.loop);
             //For Effects
-            if(info.fps != 0)
-                Debug.Log(info.fps);
         }
-        // AssetDatabase.Refresh();
-        // BuildBundles(outputPath);
+        // UnityEngine.Object[] data = AssetDatabase.LoadAllAssetsAtPath("Assets/Raw/Prefab/" + testString + ".png");
+
+        // Debug.Log(data.Length + " Data Length");
+
+        // foreach (Object o in data)
+        // {
+        //     Debug.Log("Object" + o);
+        // }
+
+        // Debug.Log("Finish Download Images");
+        // // StartCoroutine(StartBuildBundles());
+        AssetDatabase.Refresh();
+        BuildBundles(outputPath);
+
+        // StartCoroutine(StartBuildBundles());
+
     }
 
-    private IEnumerator DownloadImage(string url, int max)
+    private IEnumerator DownloadImage(string NewName, string url, int fps, int rows, int columns, int count, bool loop)
     {
-        Debug.Log("StartCoroutine");
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(url);
         yield return request.SendWebRequest();
         if(request.result == UnityWebRequest.Result.ConnectionError) 
@@ -177,17 +196,55 @@ public class CoroutineManager : MonoBehaviour
             if(!Directory.Exists(atlasdirPath)) {
                 Directory.CreateDirectory(atlasdirPath);
             }
-            File.WriteAllBytes(dirPath + "PrefabImage" + imageIndex + ".png", request.downloadHandler.data);
-            File.WriteAllBytes(atlasdirPath + "AtlasImage" + imageIndex + ".png", request.downloadHandler.data);
+
+            //Replace "Image" with name
+
+            byte[] imageData = request.downloadHandler.data;
+            string name = "";
+            if(fps > 0)
+                name = "Effect_" + rows + "_" + columns + "_" + count + "_" + fps + "_" + loop +"_,";
+            else
+                File.WriteAllBytes(atlasdirPath + NewName + ".png", imageData);
+
+            name += NewName;
+            testString = name;
+            File.WriteAllBytes(dirPath + name + ".png", imageData);
+            AssetDatabase.Refresh();
+
+            
+            // if(fps > 0)
+            //     GenerateEffect(name, fps, loop);
             imageIndex++;
-            if(imageIndex == max)
-            {
-                Debug.Log("Finish Download Images");
-                AssetDatabase.Refresh();
-                BuildBundles(outputPath);
-            }
-   
         }
+    }
+
+
+    public void GenerateEffectObject(string name, int fps, bool loop)
+    {
+        // BaseScriptableEffect asset = ScriptableObject.CreateInstance<BaseScriptableEffect>();
+        // asset.Init(name, fps, loop);
+
+        // AssetDatabase.CreateAsset(asset, "Assets/Raw/Prefab/" + name + ".asset");
+        // AssetDatabase.SaveAssets();
+        Debug.Log("Generate Prefab");
+        GameObject g = new GameObject();
+        g.name = name;
+        // AssetDatabase.CreateAsset(g, "Assets/Raw/Prefab/" + name);
+        g.AddComponent<BaseEffect>().Init(name, fps, loop);
+        // g.Init(name, fps, loop);
+        PrefabUtility.SaveAsPrefabAsset(g, "Assets/Raw/Prefab/" + g.name + ".prefab");
+        AssetDatabase.SaveAssets();
+
+        // for (int i = 0; i < colorList.Length; ++i)
+        // {
+        //     Material material = new Material(Shader.Find("Specular"));
+        //     var materialName = "material_" + i + ".mat";
+        //     AssetDatabase.CreateAsset(material, "Assets/Artifacts/" + materialName);
+
+        //     material.SetColor("_Color", colorList[i]);
+        // }
+
+        // AssetDatabase.SaveAssets();
     }
 }
 
