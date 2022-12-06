@@ -71,7 +71,7 @@ class PostprocessTexture : AssetPostprocessor
                     // var sprites = objects.Where(q => q is Sprite).Cast<Sprite>();
                     
                             // GenerateEffectObject(name + imageIndex, fps, loop);
-                    CoroutineManager.Instance.GenerateEffect(name, int.Parse(splitString[4]), System.Convert.ToBoolean(splitString[5]));
+                    CoroutineManager.Instance.GenerateEffectObject(name, int.Parse(splitString[4]), System.Convert.ToBoolean(splitString[5]));
 
                 }
                 // else
