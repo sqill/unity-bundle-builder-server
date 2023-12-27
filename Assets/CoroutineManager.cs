@@ -118,13 +118,13 @@ public class CoroutineManager : MonoBehaviour
 
         BuildPipeline.BuildAssetBundles(path + "/ios", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
 
-        // SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneOSX);
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneOSX);
 
-        // BuildPipeline.BuildAssetBundles(path + "/mac", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneOSX);
+        BuildPipeline.BuildAssetBundles(path + "/mac", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneOSX);
 
-        // SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneWindows);
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneWindows);
 
-        // BuildPipeline.BuildAssetBundles(path + "/windows", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneWindows);
+        BuildPipeline.BuildAssetBundles(path + "/windows", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneWindows);
 
         AssetDatabase.Refresh();
 
