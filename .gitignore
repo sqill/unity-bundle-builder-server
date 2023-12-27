@@ -74,4 +74,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+/Assets/Raw/Atlas/*/*.png
+/Assets/Raw/Atlas/*/*.raw
+
 # End of https://www.toptal.com/developers/gitignore/api/unity
