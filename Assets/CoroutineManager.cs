@@ -98,6 +98,17 @@ public class CoroutineManager : MonoBehaviour
         { 
             Directory.CreateDirectory(outputPath + "/ios"); 
         }
+
+        if (!Directory.Exists(outputPath + "/mac")) 
+        { 
+            Directory.CreateDirectory(outputPath + "/mac"); 
+        }
+
+        if (!Directory.Exists(outputPath + "/windows")) 
+        { 
+            Directory.CreateDirectory(outputPath + "/windows"); 
+        }
+        
         
         SpriteAtlasUtility.PackAllAtlases(BuildTarget.Android);
 
@@ -106,6 +117,15 @@ public class CoroutineManager : MonoBehaviour
         SpriteAtlasUtility.PackAllAtlases(BuildTarget.iOS);
 
         BuildPipeline.BuildAssetBundles(path + "/ios", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.iOS);
+
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneOSX);
+
+        BuildPipeline.BuildAssetBundles(path + "/mac", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneOSX);
+
+        SpriteAtlasUtility.PackAllAtlases(BuildTarget.StandaloneWindows);
+
+        BuildPipeline.BuildAssetBundles(path + "/windows", BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneWindows);
+
         AssetDatabase.Refresh();
 
         // canDelete = true;
