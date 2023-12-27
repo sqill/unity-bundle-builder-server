@@ -145,8 +145,18 @@ public class CoroutineManager : MonoBehaviour
         { 
             Directory.Delete(outputPath + "/ios", true); 
         }
+        if (Directory.Exists(outputPath + "/windows")) 
+        { 
+            Directory.Delete(outputPath + "/windows", true); 
+        }
+        if (Directory.Exists(outputPath + "/mac")) 
+        { 
+            Directory.Delete(outputPath + "/mac", true); 
+        }
         Directory.CreateDirectory(outputPath + "/android");
         Directory.CreateDirectory(outputPath + "/ios");
+        Directory.CreateDirectory(outputPath + "/windows");
+        Directory.CreateDirectory(outputPath + "/mac");
     }
 
     private void ClearImages(){
